@@ -1,0 +1,110 @@
+Project Document: AI Nutritionist App
+
+1. Introduction
+The AI Nutritionist App is a cutting-edge project designed to provide users with nutritional information by analyzing images of food items. This application uses advanced AI techniques to calculate the caloric content of the food items displayed in the uploaded image. By leveraging the Google Gemini Pro Vision API, the app aims to assist users in making healthier eating choices through real-time insights about their meals. The project is implemented using Python, Streamlit, and various external libraries for efficient data processing and user interaction.
+
+2. Objective
+The main objectives of the AI Nutritionist App are to:
+- Enable users to upload images of food items.
+- Utilize AI to analyze the image and calculate the caloric intake of each food item.
+- Provide a breakdown of calories for each individual item, helping users monitor their dietary habits.
+- Offer a seamless and intuitive user interface for easy interaction and real-time feedback.
+
+3. Technology Used
+- **Programming Language:** Python
+- **Frontend Framework:** Streamlit (for the user interface)
+- **External Libraries:**
+    - PIL (Python Imaging Library) for image processing.
+    - Google Gemini Pro Vision API for analyzing images and generating nutritional insights.
+    - dotenv for managing environment variables securely.
+    - os for interacting with operating system environments.
+
+4. Key Components
+- **Image Upload Module:** Allows users to upload food images (supports JPG, JPEG, and PNG formats).
+- **Google Gemini API Integration:** Fetches the response from the Gemini Pro Vision model, providing detailed caloric information for each food item in the image.
+- **AI-based Calorie Estimation:** Uses the Google Gemini API to calculate total calories from the uploaded food image.
+- **Streamlit Frontend:** Provides an interactive user interface for uploading images and displaying results.
+
+5. Code Overview
+- **Main Libraries Imported:**
+    ```python
+    from dotenv import load_dotenv
+    load_dotenv()  # Load all the environment variables
+    import streamlit as st
+    import os
+    import google.generativeai as genai
+    from PIL import Image
+    ```
+
+- **Google API Configuration:**
+    ```python
+    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    ```
+
+- **Function to Get Gemini API Response:**
+    ```python
+    def get_gemini_response(input_text, image, prompt):
+            model = genai.GenerativeModel('gemini-1.5-pro')
+            response = model.generate_content([input_text, image[0], prompt])
+            return response.text
+    ```
+
+- **Image Input Handling:**
+    ```python
+    def input_image_setup(uploaded_file):
+            if uploaded_file is not None:
+                    bytes_data = uploaded_file.getvalue()
+                    image_parts = [
+                            {
+                                    "mime_type": uploaded_file.type,
+                                    "data": bytes_data
+                            }
+                    ]
+                    return image_parts
+            else:
+                    raise FileNotFoundError("No file uploaded")
+    ```
+
+- **Prompt for AI to Estimate Calories:**
+    ```python
+    input_prompt = """You are an expert in nutrition where you need to see the food items from the image
+            and calculate the total calories. Also, provide the details of every food item with calorie intake
+            in the following format:
+            1. Item 1 - number of calories
+            2. Item 2 - number of calories
+            3. Item 3 - number of calories
+            """
+    ```
+
+- **Streamlit App Setup:**
+    ```python
+    st.set_page_config(page_title="AI Nutritionist App")
+    st.header("AI Nutritionist App")
+    input_text = st.text_input("Input Prompt: ", key="input")
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+    if uploaded_file is not None:
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Uploaded Image.", use_column_width=True)
+    submit = st.button("Tell me the total calories")
+
+    if submit:
+            image_data = input_image_setup(uploaded_file)
+            response = get_gemini_response(input_prompt, image_data, input_text)
+            st.subheader("The Response is:")
+            st.write(response)
+    ```
+
+6. Challenges Faced
+- **Google Gemini API Integration:** One of the main challenges was integrating and configuring the Google Gemini API to handle images properly and return accurate calorie information. Ensuring proper data formatting for the image input was crucial.
+- **Handling Different Image Formats:** Ensuring the app supported a wide range of image types (JPEG, PNG, etc.) while maintaining performance.
+- **Response Latency:** There was a noticeable delay in getting responses from the Gemini API, which needed optimization to provide faster feedback to the user.
+
+7. Future Work
+- **Enhanced Food Detection:** Future improvements could include using more advanced image recognition techniques to distinguish between similar food items and provide more accurate nutritional data.
+- **Meal Recommendations:** Based on the analyzed food items and calories, the app could recommend healthier alternatives or balanced meal plans.
+- **Multi-Language Support:** Incorporating support for multiple languages to make the app accessible globally.
+- **Mobile App Version:** Extend the functionality to mobile platforms, making the app more accessible on the go.
+
+8. Conclusion
+The AI Nutritionist App demonstrates the power of AI and image recognition in improving daily life by offering real-time nutritional insights. By leveraging Python and Google Gemini Pro Vision API, the app allows users to monitor their caloric intake and make informed dietary decisions. This project lays the foundation for future developments in AI-driven health applications, aiming to contribute to healthier lifestyles.
